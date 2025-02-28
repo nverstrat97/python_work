@@ -6,3 +6,11 @@ print(messageFirst)
 # print last name in list
 messageLast = f"Hello, {names[-1].title()}!"
 print(messageLast)
+# appending list with new name
+names.append('luke')
+names.append('leia')
+print(names)
+# removing last two names from list (I know this is not the best way to do this)... I will learn how to do this better later
+del names[-1]
+del names[-1]
+print(names)
