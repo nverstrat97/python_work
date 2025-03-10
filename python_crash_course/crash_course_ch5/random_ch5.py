@@ -1,15 +1,7 @@
-print('Type "Begin" to start the program')
-input = input().lower()
-if input == 'bbeegin':
-    #this part will tell the user what fruit they like
-    favorite_fruit = ['pear', 'raspberry', 'avocado']
-    if 'pear' in favorite_fruit:
-        print("You really like pears!")
-    if 'raspberry' in favorite_fruit:
-        print("You really like raspberries!")
-    if 'avocado' in favorite_fruit:
-        print("You really like avocados!")
-    if 'banana' in favorite_fruit:
-        print("You really like bananas!")
-    if 'orange' in favorite_fruit:
-        print("You really like oranges!")
+import random
+
+# List of players
+list_of_players = ['mario', 'luigi', 'peach', 'toad', 'yoshi', 'bowser']
+# random selection
+selected_player = random.choice(list_of_players)
+print(f"The selected player is: {selected_player.title()}")
