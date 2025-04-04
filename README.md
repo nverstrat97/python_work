@@ -40,22 +40,6 @@ Where I play around with new Python concepts and libraries, including:
 
 ---
 
-## 🛠 How to Use This Repo
-
-1. Clone the repo:
-```bash
-git clone https://github.com/yourusername/python-projects.git
-```
-2. Navigate into any folder to explore the projects.
-3. Run Python files using:
-```bash
-python filename.py
-```
-
-Make sure you're using **Python 3.x**.
-
----
-
 ## 🧠 Lessons Learned
 
 - Break problems into small steps
