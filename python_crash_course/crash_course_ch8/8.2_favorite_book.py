@@ -1,5 +1,5 @@
-# a function that takes a title as a parameter and prints a message
-def favorite_book(book):
-    print(f"One of my favorite books is {book.title()}.")
+# function to display favorite book as parameter
+def favorite_book(title, author):
+    print(f"One of my favorite books is {title.title()} by {author.title()}.")
 
-favorite_book('The architecture of Happiness by Alain de Botton')
+favorite_book('the architecture of happiness', 'alain de botton')
