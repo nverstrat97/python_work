@@ -8,7 +8,7 @@ Welcome to my Python learning repository! This space is where I am collecting, b
 
 This repo includes:
 
-### 📁 `python-crash-course`
+### 📁 `python_crash_course`
 A collection of mini-projects and practice files from my Python crash course. These are great examples of:
 - Variables & data types
 - Conditionals & loops
@@ -17,13 +17,13 @@ A collection of mini-projects and practice files from my Python crash course. Th
 - File I/O
 - Basic error handling
 
-### 📁 `automation-scripts`
+### 📁 `automation_scripts`
 Scripts that automate simple tasks to save time and build real-world skills, like:
 - Renaming files in bulk
 - Organizing folders
 - Extracting data from text files
 
-### 📁 `experiments`
+### 📁 `python_experiments`
 Where I play around with new Python concepts and libraries, including:
 - Requests
 - JSON handling
