@@ -45,7 +45,7 @@ while True:
         break
 
     # Convert tracks to an integer if provided
-   if tracks:
+    if tracks:
         try:
             tracks = int(tracks)
         except ValueError:
