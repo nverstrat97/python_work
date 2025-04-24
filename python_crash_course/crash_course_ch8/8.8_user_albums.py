@@ -1,4 +1,4 @@
-# made this similiar to the one in 8.6 but added a while loop to keep asking for input and added a function to make it easier to add new albums
+# made this similiar to the one in 8.7 but fixed while loop to quit when 'q' is entered
 
 # funcion with dictionary to describe albums and data in it
 def make_album(artist=None, album=None, tracks=None, description=None):
@@ -30,16 +30,27 @@ T_swift = make_album('Taylor Swift', '1989', 13, 'A pop album with a synth-pop s
 print_album_info(T_swift)
 
 # while loop to keep asking for input on album
-input_album = True
-while input_album:
+while True:
     artist = get_input("\nWhat is a great album? Enter q at any time to quit the program. \nEnter the artist's name: ")
+    if artist is None:
+        break
     album = get_input("Enter the album name: ")
+    if album is None:
+        break
     tracks = get_input("Enter the number of tracks (or leave blank): ")
+    if tracks is None:
+        break
     description = get_input("Enter a description of the album (or leave blank): ")
+    if description is None:
+        break
 
     # Convert tracks to an integer if provided
-    if tracks:
-        tracks = int(tracks)
+   if tracks:
+        try:
+            tracks = int(tracks)
+        except ValueError:
+            print("Invalid number for tracks. Skipping track count.")
+            tracks = None
 
     # Create the album dictionary
     album_info = make_album(artist, album, tracks, description)
