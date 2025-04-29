@@ -1,45 +1,23 @@
 # main.py
 import pygame
-from settings import WIDTH, HEIGHT, BG_COLOR, FPS
-from enemy import Enemy
-from towers import Tower
-from path import draw_path, path
+from settings import WIDTH, HEIGHT
+from game import Game
 
 def main():
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Tower Defense")
-    clock = pygame.time.Clock()
-
-    enemies = [Enemy(path)]
-    towers = []
+    game = Game(screen)
 
     running = True
     while running:
-        clock.tick(FPS)
-        screen.fill(BG_COLOR)
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.MOUSEBUTTONDOWN:
-                x, y = pygame.mouse.get_pos()
-                towers.append(Tower(x, y))
+                game.handle_click(pygame.mouse.get_pos())
 
-        draw_path(screen, path)
-
-        for enemy in enemies:
-            if enemy.alive:
-                enemy.move()
-                enemy.draw(screen)
-
-        living_enemies = [e for e in enemies if e.alive]
-
-        for tower in towers:
-            tower.update(living_enemies)
-            tower.draw(screen)
-
-        pygame.display.flip()
+        game.update()
 
     pygame.quit()
 
