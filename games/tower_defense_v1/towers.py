@@ -1,4 +1,6 @@
 import pygame
+from settings import TOWER_COST, TOWER_UPGRADE_COST_BASE, TOWER_MAX_LEVEL, TOWER_BASE_RANGE, TOWER_BASE_COOLDOWN, TOWER_BASE_DAMAGE, TOWER_RANGE_INCREASE, TOWER_DAMAGE_INCREASE, TOWER_COOLDOWN_DECREASE, TOWER_UPGRADE_COST_INCREASE
+
 
 class Projectile:
     def __init__(self, x, y, target, damage):
@@ -30,21 +32,21 @@ class Tower:
     def __init__(self, x, y):
         self.x = x
         self.y = y
-        self.range = 150
-        self.base_cooldown = 30
+        self.range = TOWER_BASE_RANGE
+        self.base_cooldown = TOWER_BASE_COOLDOWN
         self.cooldown = 0
         self.projectiles = []
         self.level = 1
-        self.max_level = 3
-        self.base_damage = 20
-        self.upgrade_cost = 50  # Cost to upgrade to next level
-        self.cost = 100  # Initial cost to build tower (for currency system)
+        self.max_level = TOWER_MAX_LEVEL
+        self.base_damage = TOWER_BASE_DAMAGE
+        self.upgrade_cost = TOWER_UPGRADE_COST_BASE  # Cost to upgrade to next level
+        self.cost = TOWER_COST  # Initial cost to build tower (for currency system)
 
     def get_stats(self):
         # Scale stats based on level
-        damage = self.base_damage + (self.level - 1) * 10  # +10 damage per level
-        cooldown = max(10, self.base_cooldown - (self.level - 1) * 5)  # Reduce cooldown, min 10
-        range_val = self.range + (self.level - 1) * 25  # +25 range per level
+        damage = self.base_damage + (self.level - 1) * TOWER_DAMAGE_INCREASE  # damage per level
+        cooldown = max(10, self.base_cooldown - (self.level - 1) * TOWER_COOLDOWN_DECREASE)  # Reduce cooldown
+        range_val = self.range + (self.level - 1) * TOWER_RANGE_INCREASE  # range per level
         return damage, cooldown, range_val
 
     def update(self, enemy_list):
@@ -73,7 +75,7 @@ class Tower:
     def upgrade(self):
         if self.level < self.max_level:
             self.level += 1
-            self.upgrade_cost += 50  # Increase cost for next upgrade
+            self.upgrade_cost += TOWER_UPGRADE_COST_INCREASE  # Increase cost for next upgrade
             return True
         return False
 

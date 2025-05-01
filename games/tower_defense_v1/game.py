@@ -1,107 +1,110 @@
 import pygame
-from enemy import Enemy
+from settings import WIDTH, HEIGHT, BG_COLOR
+from path import draw_path
+from ui import UI
+from level import Level
 from towers import Tower
-from path import draw_path, path
-from settings import WIDTH, HEIGHT, BG_COLOR, FPS
 
 class Game:
     def __init__(self, screen):
         self.screen = screen
-        # Removed self.clock since frame rate is handled in main.py
-        self.enemies = []
-        self.towers = []
-        self.path = path
         self.state = "start"  # Options: start, playing, win, lose
-        self.wave_number = 0
-        self.spawn_delay = 60
-        self.spawn_timer = 0
-        self.max_waves = 3
-        self.enemies_per_wave = 5
-        self.enemies_spawned = 0
         self.lives = 10
-        # Cached fonts for performance
-        self.font_small = pygame.font.SysFont("arial", 24)
-        self.font_large = pygame.font.SysFont("arial", 40)
+        self.money = 100
+        self.window_width = WIDTH
+        self.window_height = HEIGHT
+        self.towers = []
+        # Initialize sub-modules
+        self.ui = UI(self)  # UI handles all text rendering
+        self.level = Level(self)
 
-    def start_game(self):
-        self.state = "playing"
-        self.enemies.clear()
-        self.towers.clear()
-        self.wave_number = 1
-        self.enemies_spawned = 0
-        self.lives = 10
+    def update_window_size(self, width, height):
+        """Update window dimensions and notify sub-modules."""
+        self.window_width = width
+        self.window_height = height
+        self.level.update_window_size(width, height)
+        self.ui.update_window_size(width, height)
+        print(f"[DEBUG] Game updated to window size {width}x{height}")
 
     def update(self):
         self.screen.fill(BG_COLOR)
 
         if self.state == "start":
-            self.draw_text("Click to Start", (WIDTH // 2, HEIGHT // 2), 40)
+            self.ui.draw_start_screen()
         elif self.state == "playing":
             self.play_game()
         elif self.state == "win":
-            self.draw_text("You Win!", (WIDTH // 2, HEIGHT // 2), 40)
+            self.ui.draw_win_screen()
         elif self.state == "lose":
-            self.draw_text("You Lose", (WIDTH // 2, HEIGHT // 2), 40)
+            self.ui.draw_lose_screen()
 
         pygame.display.flip()
 
     def play_game(self):
-        draw_path(self.screen, self.path)
-
-        # Spawn enemies over time
-        self.spawn_timer += 1
-        if self.spawn_timer >= self.spawn_delay and self.enemies_spawned < self.enemies_per_wave:
-            self.enemies.append(Enemy(self.path))
-            self.spawn_timer = 0
-            self.enemies_spawned += 1
-
-        # Move enemies and check if they reach the end
-        for enemy in self.enemies:
-            if enemy.alive:
-                enemy.move()
-                if enemy.reached_end():
-                    enemy.alive = False
-                    self.lives -= 1
-            if enemy.alive:
-                enemy.draw(self.screen)
-
-        # Clean up fully processed enemies (simplified)
-        self.enemies = [e for e in self.enemies if e.alive]
-
+        # Draw level elements (path, enemies)
+        self.level.draw()
+        self.level.update()
+        
         # Update and draw towers
-        living_enemies = [e for e in self.enemies if e.alive]
+        living_enemies = [e for e in self.level.enemies if e.alive]
         for tower in self.towers:
             tower.update(living_enemies)
             tower.draw(self.screen)
 
-        # Check for loss condition
+        # Handle lives and money updates from level
+        if self.level.enemies_reached_end:
+            self.lives -= self.level.enemies_reached_end
+            self.level.enemies_reached_end = 0
+        
+        for enemy in self.level.enemies[:]:
+            if not enemy.alive and enemy.health <= 0:
+                self.money += enemy.reward
+                self.level.enemies.remove(enemy)
+
+        # Check win/lose conditions
         if self.lives <= 0:
             self.state = "lose"
-
-        # Check for win or next wave
-        elif self.enemies_spawned >= self.enemies_per_wave and not living_enemies:
-            if self.wave_number >= self.max_waves:
+        elif self.level.is_level_complete():
+            if self.level.current_level >= self.level.max_levels - 1:
                 self.state = "win"
             else:
-                self.wave_number += 1
-                self.enemies_spawned = 0
+                self.level.advance_to_next_level()
+                print(f"[DEBUG] Advancing to level {self.level.current_level + 1}")
 
-        # Display lives and wave
-        self.draw_text(f"Lives: {self.lives}", (80, 20), 24)
-        self.draw_text(f"Wave: {self.wave_number}", (WIDTH - 100, 20), 24)
+        # Draw UI stats
+        self.ui.draw_stats()
+
+    def start_game(self):
+        self.state = "playing"
+        self.level.enemies = []
+        self.towers = []
+        self.level.reset()
+        self.lives = 10
+        self.money = 100
 
     def handle_click(self, pos):
         if self.state == "start":
             self.start_game()
         elif self.state == "playing":
-            # Add tower at clicked position (consider adding validation later)
-            self.towers.append(Tower(*pos))
+            upgrade_attempted = False
+            for tower in self.towers:
+                dx = tower.x - pos[0]
+                dy = tower.y - pos[1]
+                dist = (dx**2 + dy**2) ** 0.5
+                if dist < 25:
+                    upgrade_attempted = True
+                    if self.money >= tower.upgrade_cost:
+                        if tower.upgrade():
+                            self.money -= tower.upgrade_cost
+                            print(f"[DEBUG] Tower upgraded to level {tower.level}")
+                    else:
+                        print(f"[DEBUG] Not enough money to upgrade tower. Need {tower.upgrade_cost}, have {self.money}")
+                    break
+            if not upgrade_attempted and self.money >= 100:
+                self.towers.append(Tower(*pos))
+                self.money -= 100
+                print(f"[DEBUG] Tower placed. Money left: {self.money}")
+            elif not upgrade_attempted and self.money < 100:
+                print(f"[DEBUG] Not enough money to place tower. Need 100, have {self.money}")
         elif self.state in ["win", "lose"]:
             self.state = "start"
-
-    def draw_text(self, text, pos, size):
-        # Use cached font based on size
-        font = self.font_large if size > 30 else self.font_small
-        surface = font.render(text, True, (255, 255, 255))
-        rect = surface.get_rect(center=pos)
-        self.screen.blit(surface, rect)

@@ -5,9 +5,9 @@ from game import Game
 def main():
     try:
         pygame.init()
-        screen = pygame.display.set_mode((WIDTH, HEIGHT))
+        screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
         pygame.display.set_caption("Tower Defense")
-        clock = pygame.time.Clock()  # Frame rate control
+        clock = pygame.time.Clock()
         game = Game(screen)
 
         running = True
@@ -17,6 +17,10 @@ def main():
                     running = False
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     game.handle_click(pygame.mouse.get_pos())
+                elif event.type == pygame.VIDEORESIZE:
+                    # Handle window resizing
+                    screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
+                    game.update_window_size(event.w, event.h)
 
             game.update()
             clock.tick(60)  # Cap at 60 FPS
