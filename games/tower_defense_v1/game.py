@@ -14,6 +14,7 @@ class Game:
         self.window_width = WIDTH
         self.window_height = HEIGHT
         self.towers = []
+        self.original_tower_positions = []  # Store original positions for scaling
         # Initialize sub-modules
         self.ui = UI(self)  # UI handles all text rendering
         self.level = Level(self)
@@ -24,7 +25,24 @@ class Game:
         self.window_height = height
         self.level.update_window_size(width, height)
         self.ui.update_window_size(width, height)
+        self.update_tower_positions()
         print(f"[DEBUG] Game updated to window size {width}x{height}")
+
+    def update_tower_positions(self):
+        """Scale tower positions based on current window size relative to original (800x600)."""
+        if not self.towers or not self.original_tower_positions:
+            return
+        
+        width_scale = self.window_width / WIDTH
+        height_scale = self.window_height / HEIGHT
+        
+        for i, tower in enumerate(self.towers):
+            if i < len(self.original_tower_positions):
+                orig_x, orig_y = self.original_tower_positions[i]
+                new_x = int(orig_x * width_scale)
+                new_y = int(orig_y * height_scale)
+                tower.update_position(new_x, new_y)
+                print(f"[DEBUG] Updated tower {i} position from ({orig_x}, {orig_y}) to ({new_x}, {new_y}) with scale {width_scale}x{height_scale}")
 
     def update(self):
         self.screen.fill(BG_COLOR)
@@ -78,6 +96,7 @@ class Game:
         self.state = "playing"
         self.level.enemies = []
         self.towers = []
+        self.original_tower_positions = []  # Reset on new game
         self.level.reset()
         self.lives = 10
         self.money = 100
@@ -102,6 +121,7 @@ class Game:
                     break
             if not upgrade_attempted and self.money >= 100:
                 self.towers.append(Tower(*pos))
+                self.original_tower_positions.append(pos)  # Store original position for scaling
                 self.money -= 100
                 print(f"[DEBUG] Tower placed. Money left: {self.money}")
             elif not upgrade_attempted and self.money < 100:

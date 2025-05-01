@@ -1,6 +1,5 @@
 import pygame
-from settings import TOWER_COST, TOWER_UPGRADE_COST_BASE, TOWER_MAX_LEVEL, TOWER_BASE_RANGE, TOWER_BASE_COOLDOWN, TOWER_BASE_DAMAGE, TOWER_RANGE_INCREASE, TOWER_DAMAGE_INCREASE, TOWER_COOLDOWN_DECREASE, TOWER_UPGRADE_COST_INCREASE
-
+from settings import TOWER_BASE_RANGE, TOWER_BASE_COOLDOWN, TOWER_BASE_DAMAGE, TOWER_MAX_LEVEL, TOWER_UPGRADE_COST_BASE, TOWER_COST, TOWER_DAMAGE_INCREASE, TOWER_COOLDOWN_DECREASE, TOWER_RANGE_INCREASE, TOWER_UPGRADE_COST_INCREASE
 
 class Projectile:
     def __init__(self, x, y, target, damage):
@@ -8,11 +7,11 @@ class Projectile:
         self.y = y
         self.target = target
         self.speed = 5
-        self.damage = damage  # Now configurable based on tower level
+        self.damage = damage
 
     def move(self):
-        if not self.target.alive:  # Prevent errors if target is already dead
-            return True  # Remove projectile if target is gone
+        if not self.target.alive:
+            return True
         dx = self.target.x - self.x
         dy = self.target.y - self.y
         dist = (dx**2 + dy**2) ** 0.5
@@ -39,14 +38,13 @@ class Tower:
         self.level = 1
         self.max_level = TOWER_MAX_LEVEL
         self.base_damage = TOWER_BASE_DAMAGE
-        self.upgrade_cost = TOWER_UPGRADE_COST_BASE  # Cost to upgrade to next level
-        self.cost = TOWER_COST  # Initial cost to build tower (for currency system)
+        self.upgrade_cost = TOWER_UPGRADE_COST_BASE
+        self.cost = TOWER_COST
 
     def get_stats(self):
-        # Scale stats based on level
-        damage = self.base_damage + (self.level - 1) * TOWER_DAMAGE_INCREASE  # damage per level
-        cooldown = max(10, self.base_cooldown - (self.level - 1) * TOWER_COOLDOWN_DECREASE)  # Reduce cooldown
-        range_val = self.range + (self.level - 1) * TOWER_RANGE_INCREASE  # range per level
+        damage = self.base_damage + (self.level - 1) * TOWER_DAMAGE_INCREASE
+        cooldown = max(10, self.base_cooldown - (self.level - 1) * TOWER_COOLDOWN_DECREASE)
+        range_val = self.range + (self.level - 1) * TOWER_RANGE_INCREASE
         return damage, cooldown, range_val
 
     def update(self, enemy_list):
@@ -75,7 +73,7 @@ class Tower:
     def upgrade(self):
         if self.level < self.max_level:
             self.level += 1
-            self.upgrade_cost += TOWER_UPGRADE_COST_INCREASE  # Increase cost for next upgrade
+            self.upgrade_cost += TOWER_UPGRADE_COST_INCREASE
             return True
         return False
 
@@ -83,9 +81,14 @@ class Tower:
         damage, cooldown, range_val = self.get_stats()
         pygame.draw.circle(screen, (0, 255, 255), (self.x, self.y), 20)
         pygame.draw.circle(screen, (0, 255, 255), (self.x, self.y), range_val, 1)
-        # Display level near tower
         font = pygame.font.SysFont("arial", 16)
         text = font.render(str(self.level), True, (255, 255, 255))
         screen.blit(text, (self.x - 5, self.y - 10))
         for projectile in self.projectiles:
             projectile.draw(screen)
+
+    def update_position(self, new_x, new_y):
+        """Update the tower's position to maintain proportionality on window resize."""
+        self.x = new_x
+        self.y = new_y
+        print(f"[DEBUG] Tower position updated to ({self.x}, {self.y})")
