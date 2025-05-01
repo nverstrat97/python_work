@@ -22,10 +22,11 @@ class Level:
         self.scale_path()  # Initial scaling
 
     def update_window_size(self, width, height):
-        """Update dimensions and rescale path."""
+        """Update dimensions and rescale path for all enemies."""
         self.window_width = width
         self.window_height = height
         self.scale_path()
+        self.update_enemies_path()  # Update path for existing enemies
         print(f"[DEBUG] Level updated to window size {width}x{height}")
 
     def scale_path(self):
@@ -34,6 +35,13 @@ class Level:
         height_scale = self.window_height / HEIGHT
         self.path = [(int(x * width_scale), int(y * height_scale)) for x, y in self.original_path]
         print(f"[DEBUG] Path scaled with factors width={width_scale}, height={height_scale}")
+
+    def update_enemies_path(self):
+        """Update the path for all existing enemies to follow the scaled path."""
+        for enemy in self.enemies:
+            if enemy.alive:
+                enemy.update_path(self.path)
+                print(f"[DEBUG] Updated path for enemy at index {enemy.path_index}")
 
     def reset(self):
         """Reset level state for new game."""

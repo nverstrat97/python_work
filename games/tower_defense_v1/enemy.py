@@ -1,5 +1,4 @@
 import pygame
-from settings import ENEMY_REWARD_BASIC, ENEMY_REWARD_FAST, ENEMY_REWARD_STRONG
 
 class Enemy:
     def __init__(self, path, enemy_type="basic", health=100, speed=1.2):
@@ -11,9 +10,9 @@ class Enemy:
         self.health = health
         self.max_health = health
         self.enemy_type = enemy_type
-        # Reward when defeated by tower, from settings
-        self.reward = ENEMY_REWARD_BASIC if enemy_type == "basic" else ENEMY_REWARD_FAST if enemy_type == "fast" else ENEMY_REWARD_STRONG
-        
+        # Reward when defeated by tower, can vary by type
+        self.reward = 10 if enemy_type == "basic" else 20 if enemy_type == "fast" else 15
+
     def move(self):
         if self.alive and self.path_index + 1 < len(self.path):
             target_x, target_y = self.path[self.path_index + 1]
@@ -26,11 +25,11 @@ class Enemy:
             else:
                 self.x += self.speed * dx / distance
                 self.y += self.speed * dy / distance
-        # Removed unnecessary else branch setting path_index to len(self.path)
-        # game.py will handle end-of-path logic
 
     def draw(self, screen):
-        pygame.draw.circle(screen, (255, 0, 0), (int(self.x), int(self.y)), 15)
+        # Color based on enemy type
+        color = (255, 0, 0) if self.enemy_type == "basic" else (255, 165, 0) if self.enemy_type == "fast" else (255, 0, 255)
+        pygame.draw.circle(screen, color, (int(self.x), int(self.y)), 15)
         health_bar_width = 30
         health_ratio = self.health / self.max_health
         pygame.draw.rect(screen, (0, 0, 0), (self.x - 15, self.y - 25, health_bar_width, 5))
@@ -38,3 +37,14 @@ class Enemy:
 
     def reached_end(self):
         return self.path_index >= len(self.path) - 1
+
+    def update_path(self, new_path):
+        """Update the enemy's path to follow a new scaled path after window resize."""
+        if self.path_index < len(new_path):
+            self.path = new_path
+            # Adjust current position to match the new scaled path's corresponding point if possible
+            if self.path_index < len(self.path):
+                self.x, self.y = self.path[self.path_index]
+            print(f"[DEBUG] Enemy path updated, position reset to {self.x}, {self.y} at index {self.path_index}")
+        else:
+            print(f"[DEBUG] Enemy path not updated, beyond path length at index {self.path_index}")

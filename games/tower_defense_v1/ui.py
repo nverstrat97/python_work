@@ -20,16 +20,20 @@ class UI:
         font = self.font_large if size > 30 else self.font_small
         surface = font.render(text, True, (255, 255, 255))
         rect = surface.get_rect(center=pos)
+        print(f"[DEBUG] Drawing text '{text}' at {pos}, actual position: {rect.topleft} to {rect.bottomright}")
         self.game.screen.blit(surface, rect)
 
     def draw_start_screen(self):
-        self.draw_text("Click to Start", (self.window_width // 2, self.window_height // 2), 40)
+        center_pos = (self.window_width // 2, self.window_height // 2)
+        self.draw_text("Click to Start", center_pos, 40)
 
     def draw_win_screen(self):
-        self.draw_text("You Win!", (self.window_width // 2, self.window_height // 2), 40)
+        center_pos = (self.window_width // 2, self.window_height // 2)
+        self.draw_text("You Win!", center_pos, 40)
 
     def draw_lose_screen(self):
-        self.draw_text("You Lose", (self.window_width // 2, self.window_height // 2), 40)
+        center_pos = (self.window_width // 2, self.window_height // 2)
+        self.draw_text("You Lose", center_pos, 40)
 
     def draw_stats(self):
         """Draw game stats (lives, money, wave) at the top."""
