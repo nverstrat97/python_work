@@ -26,23 +26,25 @@ class Enemy:
                 self.x += self.speed * dx / distance
                 self.y += self.speed * dy / distance
 
-    def draw(self, screen):
+    def draw(self, screen, offset_x=0, offset_y=0):
         # Color based on enemy type
         color = (255, 0, 0) if self.enemy_type == "basic" else (255, 165, 0) if self.enemy_type == "fast" else (255, 0, 255)
-        pygame.draw.circle(screen, color, (int(self.x), int(self.y)), 15)
+        # Apply viewport offset for drawing
+        draw_x = int(self.x + offset_x)
+        draw_y = int(self.y + offset_y)
+        pygame.draw.circle(screen, color, (draw_x, draw_y), 15)
         health_bar_width = 30
         health_ratio = self.health / self.max_health
-        pygame.draw.rect(screen, (0, 0, 0), (self.x - 15, self.y - 25, health_bar_width, 5))
-        pygame.draw.rect(screen, (0, 255, 0), (self.x - 15, self.y - 25, health_bar_width * health_ratio, 5))
+        pygame.draw.rect(screen, (0, 0, 0), (draw_x - 15, draw_y - 25, health_bar_width, 5))
+        pygame.draw.rect(screen, (0, 255, 0), (draw_x - 15, draw_y - 25, health_bar_width * health_ratio, 5))
 
     def reached_end(self):
         return self.path_index >= len(self.path) - 1
 
     def update_path(self, new_path):
-        """Update the enemy's path to follow a new scaled path after window resize."""
+        """Update the enemy's path if needed (not used with fixed board, kept for compatibility)."""
         if self.path_index < len(new_path):
             self.path = new_path
-            # Adjust current position to match the new scaled path's corresponding point if possible
             if self.path_index < len(self.path):
                 self.x, self.y = self.path[self.path_index]
             print(f"[DEBUG] Enemy path updated, position reset to {self.x}, {self.y} at index {self.path_index}")

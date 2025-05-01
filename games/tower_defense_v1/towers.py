@@ -24,8 +24,8 @@ class Projectile:
         self.y += self.speed * dy / dist
         return False
 
-    def draw(self, screen):
-        pygame.draw.circle(screen, (0, 0, 255), (int(self.x), int(self.y)), 5)
+    def draw(self, screen, offset_x=0, offset_y=0):
+        pygame.draw.circle(screen, (0, 0, 255), (int(self.x + offset_x), int(self.y + offset_y)), 5)
 
 class Tower:
     def __init__(self, x, y):
@@ -77,18 +77,20 @@ class Tower:
             return True
         return False
 
-    def draw(self, screen):
+    def draw(self, screen, offset_x=0, offset_y=0):
         damage, cooldown, range_val = self.get_stats()
-        pygame.draw.circle(screen, (0, 255, 255), (self.x, self.y), 20)
-        pygame.draw.circle(screen, (0, 255, 255), (self.x, self.y), range_val, 1)
+        draw_x = int(self.x + offset_x)
+        draw_y = int(self.y + offset_y)
+        pygame.draw.circle(screen, (0, 255, 255), (draw_x, draw_y), 20)
+        pygame.draw.circle(screen, (0, 255, 255), (draw_x, draw_y), range_val, 1)
         font = pygame.font.SysFont("arial", 16)
         text = font.render(str(self.level), True, (255, 255, 255))
-        screen.blit(text, (self.x - 5, self.y - 10))
+        screen.blit(text, (draw_x - 5, draw_y - 10))
         for projectile in self.projectiles:
-            projectile.draw(screen)
+            projectile.draw(screen, offset_x, offset_y)
 
     def update_position(self, new_x, new_y):
-        """Update the tower's position to maintain proportionality on window resize."""
+        """Update the tower's position if needed (not used with fixed board, kept for compatibility)."""
         self.x = new_x
         self.y = new_y
         print(f"[DEBUG] Tower position updated to ({self.x}, {self.y})")

@@ -20,7 +20,6 @@ class UI:
         font = self.font_large if size > 30 else self.font_small
         surface = font.render(text, True, (255, 255, 255))
         rect = surface.get_rect(center=pos)
-        print(f"[DEBUG] Drawing text '{text}' at {pos}, actual position: {rect.topleft} to {rect.bottomright}")
         self.game.screen.blit(surface, rect)
 
     def draw_start_screen(self):

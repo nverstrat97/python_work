@@ -1,12 +1,11 @@
-from settings import WIDTH, HEIGHT
+from settings import WIDTH, HEIGHT, GAME_BOARD_WIDTH, GAME_BOARD_HEIGHT
 from path import original_path, draw_path
 from enemy import Enemy
 
 class Level:
     def __init__(self, game):
         self.game = game
-        self.original_path = original_path  # Base path for 800x600
-        self.path = self.original_path  # Scaled path
+        self.path = original_path  # Use fixed path for game board (no scaling)
         self.enemies = []
         self.wave_number = 0
         self.spawn_delay = 60
@@ -17,31 +16,10 @@ class Level:
         self.max_waves = 3
         self.current_level = 0
         self.max_levels = 1
-        self.window_width = WIDTH
-        self.window_height = HEIGHT
-        self.scale_path()  # Initial scaling
 
     def update_window_size(self, width, height):
-        """Update dimensions and rescale path for all enemies."""
-        self.window_width = width
-        self.window_height = height
-        self.scale_path()
-        self.update_enemies_path()  # Update path for existing enemies
-        print(f"[DEBUG] Level updated to window size {width}x{height}")
-
-    def scale_path(self):
-        """Scale path coordinates based on current window size relative to original (800x600)."""
-        width_scale = self.window_width / WIDTH
-        height_scale = self.window_height / HEIGHT
-        self.path = [(int(x * width_scale), int(y * height_scale)) for x, y in self.original_path]
-        print(f"[DEBUG] Path scaled with factors width={width_scale}, height={height_scale}")
-
-    def update_enemies_path(self):
-        """Update the path for all existing enemies to follow the scaled path."""
-        for enemy in self.enemies:
-            if enemy.alive:
-                enemy.update_path(self.path)
-                print(f"[DEBUG] Updated path for enemy at index {enemy.path_index}")
+        """Update dimensions but do not rescale path (fixed game board)."""
+        print(f"[DEBUG] Level received window size update {width}x{height}, but path remains fixed")
 
     def reset(self):
         """Reset level state for new game."""
@@ -50,12 +28,12 @@ class Level:
         self.enemies_spawned = 0
 
     def draw(self):
-        """Draw level elements like the path."""
-        draw_path(self.game.screen, self.path)
+        """Draw level elements like the path with viewport offset."""
+        draw_path(self.game.screen, [(x + self.game.viewport_x, y + self.game.viewport_y) for x, y in self.path])
 
     def update(self):
         """Update level logic like enemy spawning and movement."""
-        # Spawn enemies over time using scaled path
+        # Spawn enemies over time using fixed path
         self.spawn_timer += 1
         if self.spawn_timer >= self.spawn_delay and self.enemies_spawned < self.enemies_per_wave:
             self.enemies.append(Enemy(self.path))
@@ -72,7 +50,7 @@ class Level:
                     print(f"[DEBUG] Enemy reached end. Lives to deduct: {self.enemies_reached_end}")
 
             if enemy.alive:
-                enemy.draw(self.game.screen)
+                enemy.draw(self.game.screen, offset_x=self.game.viewport_x, offset_y=self.game.viewport_y)
 
     def is_wave_complete(self):
         """Check if current wave is done."""

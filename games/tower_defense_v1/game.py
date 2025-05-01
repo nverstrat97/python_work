@@ -1,6 +1,5 @@
 import pygame
-from settings import WIDTH, HEIGHT, BG_COLOR
-from path import draw_path
+from settings import WIDTH, HEIGHT, BG_COLOR, GAME_BOARD_WIDTH, GAME_BOARD_HEIGHT
 from ui import UI
 from level import Level
 from towers import Tower
@@ -14,35 +13,22 @@ class Game:
         self.window_width = WIDTH
         self.window_height = HEIGHT
         self.towers = []
-        self.original_tower_positions = []  # Store original positions for scaling
         # Initialize sub-modules
-        self.ui = UI(self)  # UI handles all text rendering
+        self.ui = UI(self)
         self.level = Level(self)
+        # Calculate viewport offset to center game board if window is larger
+        self.viewport_x = max(0, (self.window_width - GAME_BOARD_WIDTH) // 2)
+        self.viewport_y = max(0, (self.window_height - GAME_BOARD_HEIGHT) // 2)
 
     def update_window_size(self, width, height):
-        """Update window dimensions and notify sub-modules."""
+        """Update window dimensions and adjust viewport, not game elements."""
         self.window_width = width
         self.window_height = height
-        self.level.update_window_size(width, height)
         self.ui.update_window_size(width, height)
-        self.update_tower_positions()
-        print(f"[DEBUG] Game updated to window size {width}x{height}")
-
-    def update_tower_positions(self):
-        """Scale tower positions based on current window size relative to original (800x600)."""
-        if not self.towers or not self.original_tower_positions:
-            return
-        
-        width_scale = self.window_width / WIDTH
-        height_scale = self.window_height / HEIGHT
-        
-        for i, tower in enumerate(self.towers):
-            if i < len(self.original_tower_positions):
-                orig_x, orig_y = self.original_tower_positions[i]
-                new_x = int(orig_x * width_scale)
-                new_y = int(orig_y * height_scale)
-                tower.update_position(new_x, new_y)
-                print(f"[DEBUG] Updated tower {i} position from ({orig_x}, {orig_y}) to ({new_x}, {new_y}) with scale {width_scale}x{height_scale}")
+        # Center the game board in the window if window is larger than game board
+        self.viewport_x = max(0, (self.window_width - GAME_BOARD_WIDTH) // 2)
+        self.viewport_y = max(0, (self.window_height - GAME_BOARD_HEIGHT) // 2)
+        print(f"[DEBUG] Game updated to window size {width}x{height}, viewport offset ({self.viewport_x}, {self.viewport_y})")
 
     def update(self):
         self.screen.fill(BG_COLOR)
@@ -59,15 +45,15 @@ class Game:
         pygame.display.flip()
 
     def play_game(self):
-        # Draw level elements (path, enemies)
+        # Draw level elements (path, enemies) with viewport offset
         self.level.draw()
         self.level.update()
         
-        # Update and draw towers
+        # Update and draw towers with viewport offset
         living_enemies = [e for e in self.level.enemies if e.alive]
         for tower in self.towers:
             tower.update(living_enemies)
-            tower.draw(self.screen)
+            tower.draw(self.screen, offset_x=self.viewport_x, offset_y=self.viewport_y)
 
         # Handle lives and money updates from level
         if self.level.enemies_reached_end:
@@ -89,14 +75,21 @@ class Game:
                 self.level.advance_to_next_level()
                 print(f"[DEBUG] Advancing to level {self.level.current_level + 1}")
 
-        # Draw UI stats
+        # Draw UI stats (adapts to window size via UI class)
         self.ui.draw_stats()
+        # Draw game border
+        self.draw_border()
+
+    def draw_border(self):
+        """Draw a border around the fixed game board area."""
+        from settings import BORDER_COLOR, BORDER_THICKNESS, GAME_BOARD_WIDTH, GAME_BOARD_HEIGHT
+        border_rect = pygame.Rect(self.viewport_x, self.viewport_y, GAME_BOARD_WIDTH, GAME_BOARD_HEIGHT)
+        pygame.draw.rect(self.screen, BORDER_COLOR, border_rect, BORDER_THICKNESS)
 
     def start_game(self):
         self.state = "playing"
         self.level.enemies = []
         self.towers = []
-        self.original_tower_positions = []  # Reset on new game
         self.level.reset()
         self.lives = 10
         self.money = 100
@@ -105,26 +98,32 @@ class Game:
         if self.state == "start":
             self.start_game()
         elif self.state == "playing":
-            upgrade_attempted = False
-            for tower in self.towers:
-                dx = tower.x - pos[0]
-                dy = tower.y - pos[1]
-                dist = (dx**2 + dy**2) ** 0.5
-                if dist < 25:
-                    upgrade_attempted = True
-                    if self.money >= tower.upgrade_cost:
-                        if tower.upgrade():
-                            self.money -= tower.upgrade_cost
-                            print(f"[DEBUG] Tower upgraded to level {tower.level}")
-                    else:
-                        print(f"[DEBUG] Not enough money to upgrade tower. Need {tower.upgrade_cost}, have {self.money}")
-                    break
-            if not upgrade_attempted and self.money >= 100:
-                self.towers.append(Tower(*pos))
-                self.original_tower_positions.append(pos)  # Store original position for scaling
-                self.money -= 100
-                print(f"[DEBUG] Tower placed. Money left: {self.money}")
-            elif not upgrade_attempted and self.money < 100:
-                print(f"[DEBUG] Not enough money to place tower. Need 100, have {self.money}")
+            # Adjust click position to account for viewport offset (convert window coords to game board coords)
+            adjusted_pos = (pos[0] - self.viewport_x, pos[1] - self.viewport_y)
+            # Only allow clicks within game board boundaries
+            if (0 <= adjusted_pos[0] <= GAME_BOARD_WIDTH and 
+                0 <= adjusted_pos[1] <= GAME_BOARD_HEIGHT):
+                upgrade_attempted = False
+                for tower in self.towers:
+                    dx = tower.x - adjusted_pos[0]
+                    dy = tower.y - adjusted_pos[1]
+                    dist = (dx**2 + dy**2) ** 0.5
+                    if dist < 25:
+                        upgrade_attempted = True
+                        if self.money >= tower.upgrade_cost:
+                            if tower.upgrade():
+                                self.money -= tower.upgrade_cost
+                                print(f"[DEBUG] Tower upgraded to level {tower.level}")
+                        else:
+                            print(f"[DEBUG] Not enough money to upgrade tower. Need {tower.upgrade_cost}, have {self.money}")
+                        break
+                if not upgrade_attempted and self.money >= 100:
+                    self.towers.append(Tower(*adjusted_pos))
+                    self.money -= 100
+                    print(f"[DEBUG] Tower placed at {adjusted_pos}. Money left: {self.money}")
+                elif not upgrade_attempted and self.money < 100:
+                    print(f"[DEBUG] Not enough money to place tower. Need 100, have {self.money}")
+            else:
+                print(f"[DEBUG] Click outside game board boundaries at {adjusted_pos}")
         elif self.state in ["win", "lose"]:
             self.state = "start"
