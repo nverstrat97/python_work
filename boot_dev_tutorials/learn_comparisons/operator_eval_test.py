@@ -1,27 +1,24 @@
-'''''''''Assignment
-Complete the player_1_wins function. It should return True if player 1 has a higher score, and False otherwise.'''''''''
-from operators_main import *
+from operator_eval_main import *
 
 run_cases = [
-    (5, 6, False),
-    (5, 5, False),
-    (7, 6, True),
+    (5, 5, 7, 5, (True, True, False)),
+    (6, 6, 5, 5, (False, True, False)),
 ]
 
 submit_cases = run_cases + [
-    (10, 3, True),
-    (2, 2, False),
-    (0, 0, False),
-    (10, 5, True),
-    (5, 10, False),
+    (4, 4, 4, 4, (True, True, True)),
+    (2, 2, 2, 2, (True, True, True)),
+    (8, 8, 8, 7, (False, True, True)),
+    (5, 7, 9, 11, (False, False, False)),
+    (11, 9, 7, 5, (False, False, False)),
 ]
 
 
-def test(player_1_score, player_2_score, expected):
+def test(elon, sara, jill, bob, expected):
     print("---------------------------------")
-    print(f"Inputs: {player_1_score}, {player_2_score}")
+    print(f"Inputs: {elon}, {sara}, {jill}, {bob}")
     print(f"Expecting: {expected}")
-    result = player_1_wins(player_1_score, player_2_score)
+    result = compare_heights(elon, sara, jill, bob)
     print(f"Actual: {result}")
     if result == expected:
         print("Pass")
