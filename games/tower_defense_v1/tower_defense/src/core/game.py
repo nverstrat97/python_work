@@ -1,8 +1,8 @@
 import pygame
-from settings import WIDTH, HEIGHT, BG_COLOR, GAME_BOARD_WIDTH, GAME_BOARD_HEIGHT
-from ui import UI
-from level import Level
-from towers import Tower
+from src.settings import WIDTH, HEIGHT, BG_COLOR, GAME_BOARD_WIDTH, GAME_BOARD_HEIGHT
+from src.ui.ui import UI
+from src.core.level import Level
+from src.entities.towers import Tower
 
 class Game:
     def __init__(self, screen):

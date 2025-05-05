@@ -1,6 +1,6 @@
 import pygame
-from settings import WIDTH, HEIGHT
-from core.game import Game
+from src.settings import WIDTH, HEIGHT
+from src.core.game import Game
 
 def main():
     try:
